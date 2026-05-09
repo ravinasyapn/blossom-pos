@@ -14,6 +14,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as ProductsRouteImport } from './routes/products'
 import { Route as PosRouteImport } from './routes/pos'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HistoryRouteImport } from './routes/history'
 import { Route as ForgotRouteImport } from './routes/forgot'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CategoriesRouteImport } from './routes/categories'
@@ -44,6 +45,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotRoute = ForgotRouteImport.update({
   id: '/forgot',
   path: '/forgot',
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
+  '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/pos': typeof PosRoute
   '/products': typeof ProductsRoute
@@ -81,6 +88,7 @@ export interface FileRoutesByTo {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
+  '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/pos': typeof PosRoute
   '/products': typeof ProductsRoute
@@ -93,6 +101,7 @@ export interface FileRoutesById {
   '/categories': typeof CategoriesRoute
   '/dashboard': typeof DashboardRoute
   '/forgot': typeof ForgotRoute
+  '/history': typeof HistoryRoute
   '/login': typeof LoginRoute
   '/pos': typeof PosRoute
   '/products': typeof ProductsRoute
@@ -106,6 +115,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/forgot'
+    | '/history'
     | '/login'
     | '/pos'
     | '/products'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/forgot'
+    | '/history'
     | '/login'
     | '/pos'
     | '/products'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/categories'
     | '/dashboard'
     | '/forgot'
+    | '/history'
     | '/login'
     | '/pos'
     | '/products'
@@ -140,6 +152,7 @@ export interface RootRouteChildren {
   CategoriesRoute: typeof CategoriesRoute
   DashboardRoute: typeof DashboardRoute
   ForgotRoute: typeof ForgotRoute
+  HistoryRoute: typeof HistoryRoute
   LoginRoute: typeof LoginRoute
   PosRoute: typeof PosRoute
   ProductsRoute: typeof ProductsRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot': {
       id: '/forgot'
       path: '/forgot'
@@ -220,6 +240,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategoriesRoute: CategoriesRoute,
   DashboardRoute: DashboardRoute,
   ForgotRoute: ForgotRoute,
+  HistoryRoute: HistoryRoute,
   LoginRoute: LoginRoute,
   PosRoute: PosRoute,
   ProductsRoute: ProductsRoute,
