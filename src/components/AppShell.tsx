@@ -3,14 +3,12 @@ import { Home, Package, History, Settings as SettingsIcon, ChevronDown, LogOut }
 import { useState, type ReactNode } from "react";
 
 const navMain = [
-  { to: "/dashboard", label: "Beranda", icon: Home },
+  { to: "/pos", label: "Beranda", icon: Home },
 ];
 
 const productSub = [
-  { to: "/pos", label: "Point of Sale" },
   { to: "/products", label: "Daftar Produk" },
   { to: "/categories", label: "Daftar Kategori" },
-  { to: "/stock", label: "Stok" },
 ];
 
 const navTail = [
