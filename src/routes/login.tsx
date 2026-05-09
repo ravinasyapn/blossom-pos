@@ -12,7 +12,7 @@ function Login() {
       <h2 className="font-display text-3xl text-maroon font-bold text-center mb-8">Silahkan Masuk!</h2>
       <form
         className="space-y-5"
-        onSubmit={(e) => { e.preventDefault(); nav({ to: "/dashboard" }); }}
+        onSubmit={(e) => { e.preventDefault(); nav({ to: "/pos" }); }}
       >
         <div>
           <label className="block text-sm font-semibold text-maroon mb-2">Email / No. Telepon</label>
