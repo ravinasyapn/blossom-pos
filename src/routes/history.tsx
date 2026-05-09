@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { AppShell } from "@/components/AppShell";
 import { useStore, formatIDR } from "@/lib/store";
-import { History as HistoryIcon, Search, Receipt as RIcon } from "lucide-react";
+import { Store, Search, Receipt as RIcon } from "lucide-react";
 
 export const Route = createFileRoute("/history")({ component: History });
 
@@ -16,20 +16,62 @@ function History() {
     [transactions, q]
   );
   const total = filtered.reduce((s, t) => s + t.subtotal, 0);
+  const totalCount = transactions.length;
+  const totalRevenue = transactions.reduce((s, t) => s + t.subtotal, 0);
+  const methodCounts = transactions.reduce(
+    (acc, t) => { acc[t.method] = (acc[t.method] || 0) + 1; return acc; },
+    {} as Record<string, number>
+  );
+  const flowerCounts: Record<string, number> = {};
+  transactions.forEach((t) => t.items.forEach((i) => { flowerCounts[i.name] = (flowerCounts[i.name] || 0) + i.qty; }));
+  const topFlower = Object.entries(flowerCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "-";
+
+  const formatK = (n: number) => n >= 1000 ? `Rp ${Math.round(n / 1000).toLocaleString("id-ID")}k` : formatIDR(n);
 
   return (
     <AppShell>
       <div className="p-8 space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-bold text-maroon flex items-center gap-2"><HistoryIcon /> Riwayat Transaksi</h1>
-            <p className="text-maroon/70 text-sm mt-1">{filtered.length} transaksi · Total {formatIDR(total)}</p>
+        {/* Hero header */}
+        <div className="bg-pink-soft rounded-3xl p-6 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-xl bg-olive flex items-center justify-center text-maroon">
+              <Store size={22} />
+            </div>
+            <div>
+              <h1 className="font-display text-3xl font-bold text-maroon">Riwayat Transaksi</h1>
+              <p className="text-maroon/70 text-xs">Pantau dan kelola semua transaksi penjualan</p>
+            </div>
           </div>
-          <div className="relative w-full sm:w-72">
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-card rounded-2xl p-5">
+              <p className="text-sm text-maroon/70">Total Transaksi</p>
+              <p className="font-display text-4xl font-bold text-pink-deep mt-3">{totalCount}</p>
+            </div>
+            <div className="bg-card rounded-2xl p-5">
+              <p className="text-sm text-maroon/70">Total Pendapatan</p>
+              <p className="font-display text-3xl font-bold text-olive-foreground mt-3" style={{ color: "var(--olive)" }}>{formatK(totalRevenue)}</p>
+            </div>
+            <div className="bg-card rounded-2xl p-5">
+              <p className="text-sm text-maroon/70 mb-3">Metode Pembayaran</p>
+              <div className="flex gap-6">
+                <div><p className="text-xs text-maroon/70">Tunai</p><p className="text-lg font-bold text-maroon">{methodCounts["Tunai"] || 0}</p></div>
+                <div><p className="text-xs text-maroon/70">Qris</p><p className="text-lg font-bold text-maroon">{methodCounts["QRIS"] || 0}</p></div>
+              </div>
+            </div>
+            <div className="bg-card rounded-2xl p-5">
+              <p className="text-sm text-maroon/70">Bunga Terlaris</p>
+              <p className="font-display text-3xl font-bold text-maroon mt-3 truncate">{topFlower}</p>
+            </div>
+          </div>
+
+          <div className="relative">
             <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-maroon/50" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari nama atau ID" className="input-pill pl-10" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari berdasarkan struk atau nama pelanggan" className="input-pill pl-10 bg-card" />
           </div>
         </div>
+
+        <p className="text-maroon/70 text-sm">{filtered.length} transaksi · Total {formatIDR(total)}</p>
 
         <div className="bg-card rounded-2xl shadow-sm overflow-hidden">
           <table className="w-full text-sm">
