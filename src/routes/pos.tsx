@@ -79,9 +79,8 @@ function POS() {
             {filtered.map((p) => (
               <button
                 key={p.id}
-                onClick={() => p.stock > 0 && cartActions.add(p.id)}
-                disabled={p.stock <= 0}
-                className="bg-card rounded-2xl overflow-hidden text-left hover:scale-[1.02] transition shadow-sm disabled:opacity-50"
+                onClick={() => cartActions.add(p.id)}
+                className="bg-card rounded-2xl overflow-hidden text-left hover:scale-[1.02] transition shadow-sm"
               >
                 <div className="aspect-square overflow-hidden bg-secondary">
                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
