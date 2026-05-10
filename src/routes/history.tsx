@@ -66,8 +66,8 @@ function History() {
           </div>
 
           <div className="relative">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-maroon/50" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari berdasarkan struk atau nama pelanggan" className="input-pill pl-10 bg-card" />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-maroon/50 pointer-events-none" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari berdasarkan struk atau nama pelanggan" className="input-pill !pl-12 bg-card" />
           </div>
         </div>
 
