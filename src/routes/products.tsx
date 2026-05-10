@@ -91,14 +91,11 @@ function ProductModal({ initial, onClose }: { initial: Product | null; onClose: 
           <div><label className="text-sm font-semibold text-maroon">Harga</label><input className="input-pill mt-1" inputMode="numeric" value={price} onChange={(e) => setPrice(e.target.value.replace(/\D/g, ""))} required /></div>
           <div><label className="text-sm font-semibold text-maroon">Satuan</label><input className="input-pill mt-1" value={unit} onChange={(e) => setUnit(e.target.value)} required /></div>
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-sm font-semibold text-maroon">Kategori</label>
-            <select className="input-pill mt-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </div>
-          <div><label className="text-sm font-semibold text-maroon">Stok</label><input className="input-pill mt-1" inputMode="numeric" value={stock} onChange={(e) => setStock(e.target.value.replace(/\D/g, ""))} /></div>
+        <div>
+          <label className="text-sm font-semibold text-maroon">Kategori</label>
+          <select className="input-pill mt-1" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
         </div>
         <div><label className="text-sm font-semibold text-maroon">URL Gambar</label><input className="input-pill mt-1" value={image} onChange={(e) => setImage(e.target.value)} /></div>
         <img src={image} alt="" className="w-full h-32 object-cover rounded-xl" />
