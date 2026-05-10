@@ -79,9 +79,8 @@ function POS() {
             {filtered.map((p) => (
               <button
                 key={p.id}
-                onClick={() => p.stock > 0 && cartActions.add(p.id)}
-                disabled={p.stock <= 0}
-                className="bg-card rounded-2xl overflow-hidden text-left hover:scale-[1.02] transition shadow-sm disabled:opacity-50"
+                onClick={() => cartActions.add(p.id)}
+                className="bg-card rounded-2xl overflow-hidden text-left hover:scale-[1.02] transition shadow-sm"
               >
                 <div className="aspect-square overflow-hidden bg-secondary">
                   <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
@@ -89,7 +88,7 @@ function POS() {
                 <div className="p-3 text-center">
                   <p className="font-semibold text-maroon text-sm">{p.name}</p>
                   <p className="text-pink-deep font-bold mt-1">{formatIDR(p.price)}</p>
-                  <p className="text-[10px] text-maroon/60">per {p.unit} · stok {p.stock}</p>
+                  <p className="text-[10px] text-maroon/60">per {p.unit}</p>
                 </div>
               </button>
             ))}

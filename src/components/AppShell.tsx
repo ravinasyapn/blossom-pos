@@ -20,17 +20,24 @@ const navTail = [
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const isProductSection = productSub.some((s) => pathname.startsWith(s.to));
-  const [open, setOpen] = useState(isProductSection);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openSub, setOpenSub] = useState(isProductSection);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  useEffect(() => { setMobileOpen(false); }, [pathname]);
+  useEffect(() => {
+    // auto-close on mobile after navigation
+    if (window.innerWidth < 1024) setSidebarOpen(false);
+  }, [pathname]);
 
   return (
     <div className="flex min-h-screen bg-pink-soft">
-      {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 inset-x-0 h-14 bg-card border-b border-border z-40 flex items-center justify-between px-4">
-        <button onClick={() => setMobileOpen(true)} className="text-maroon p-2 -ml-2" aria-label="Buka menu">
-          <Menu size={22} />
+      {/* Top bar (always visible, contains toggle) */}
+      <header className="fixed top-0 inset-x-0 h-14 bg-card border-b border-border z-40 flex items-center justify-between px-4">
+        <button
+          onClick={() => setSidebarOpen((v) => !v)}
+          className="text-maroon p-2 -ml-2 rounded-lg hover:bg-secondary transition"
+          aria-label={sidebarOpen ? "Tutup menu" : "Buka menu"}
+        >
+          {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
         <div className="flex items-center gap-2">
           <img src={logo} alt="" className="h-8 w-8 rounded-full object-cover" />
@@ -39,27 +46,20 @@ export function AppShell({ children }: { children: ReactNode }) {
         <span className="w-8" />
       </header>
 
-      {/* Backdrop (mobile) */}
-      {mobileOpen && (
-        <div onClick={() => setMobileOpen(false)} className="lg:hidden fixed inset-0 bg-black/40 z-40" />
+      {/* Backdrop (mobile only) */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/40 z-40 top-14"
+        />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - slides from right to left on open */}
       <aside
-        className={`fixed lg:sticky top-0 left-0 h-screen w-72 shrink-0 bg-card border-r border-border flex flex-col z-50 transition-transform duration-300 ${
-          mobileOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0`}
+        className={`fixed top-14 left-0 h-[calc(100vh-3.5rem)] w-72 shrink-0 bg-card border-r border-border flex flex-col z-50 transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        <div className="p-6 flex items-center gap-3 border-b border-border">
-          <img src={logo} alt="Gurita Bouquet" className="h-12 w-12 rounded-full object-cover shadow" />
-          <div className="font-display text-maroon text-xl font-bold leading-tight flex-1">
-            GURITA<br/>BOUQUET.
-          </div>
-          <button onClick={() => setMobileOpen(false)} className="lg:hidden text-maroon p-1" aria-label="Tutup menu">
-            <X size={20} />
-          </button>
-        </div>
-
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
           {navMain.map((item) => {
             const active = pathname === item.to;
@@ -78,15 +78,15 @@ export function AppShell({ children }: { children: ReactNode }) {
           })}
 
           <button
-            onClick={() => setOpen((v) => !v)}
+            onClick={() => setOpenSub((v) => !v)}
             className={`w-full flex items-center justify-between px-5 py-3 rounded-full font-semibold transition ${
               isProductSection ? "bg-accent text-maroon" : "text-maroon hover:bg-secondary"
             }`}
           >
             <span className="flex items-center gap-3"><Package size={20} /> Manajemen Produk</span>
-            <ChevronDown size={18} className={`transition ${open ? "rotate-180" : ""}`} />
+            <ChevronDown size={18} className={`transition ${openSub ? "rotate-180" : ""}`} />
           </button>
-          {open && (
+          {openSub && (
             <div className="pl-6 space-y-1">
               {productSub.map((s) => {
                 const active = pathname === s.to;
@@ -132,7 +132,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 pt-14 lg:pt-0">{children}</main>
+      <main className={`flex-1 min-w-0 pt-14 transition-[margin] duration-300 ${sidebarOpen ? "lg:ml-72" : "ml-0"}`}>
+        {children}
+      </main>
     </div>
   );
 }
