@@ -89,7 +89,7 @@ function POS() {
                 <div className="p-3 text-center">
                   <p className="font-semibold text-maroon text-sm">{p.name}</p>
                   <p className="text-pink-deep font-bold mt-1">{formatIDR(p.price)}</p>
-                  <p className="text-[10px] text-maroon/60">per {p.unit} · stok {p.stock}</p>
+                  <p className="text-[10px] text-maroon/60">per {p.unit}</p>
                 </div>
               </button>
             ))}
