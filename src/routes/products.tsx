@@ -72,12 +72,11 @@ function ProductModal({ initial, onClose }: { initial: Product | null; onClose: 
   const [price, setPrice] = useState(String(initial?.price ?? ""));
   const [unit, setUnit] = useState(initial?.unit ?? "tangkai");
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? categories[0]?.id ?? "");
-  const [stock, setStock] = useState(String(initial?.stock ?? "0"));
   const [image, setImage] = useState(initial?.image ?? "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    const payload = { name, price: parseInt(price) || 0, unit, categoryId, stock: parseInt(stock) || 0, image };
+    const payload = { name, price: parseInt(price) || 0, unit, categoryId, stock: initial?.stock ?? 0, image };
     if (initial) actions.updateProduct(initial.id, payload);
     else actions.addProduct(payload);
     onClose();
