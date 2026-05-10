@@ -36,15 +36,9 @@ function SettingsPage() {
             <label className="text-sm font-semibold text-maroon">Alamat</label>
             <input className="input-pill mt-1" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-semibold text-maroon">No. Telepon</label>
-              <input className="input-pill mt-1" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-            </div>
-            <div>
-              <label className="text-sm font-semibold text-maroon">Pajak (%)</label>
-              <input type="number" className="input-pill mt-1" value={form.taxPercent} onChange={(e) => setForm({ ...form, taxPercent: parseFloat(e.target.value) || 0 })} />
-            </div>
+          <div>
+            <label className="text-sm font-semibold text-maroon">No. Telepon</label>
+            <input className="input-pill mt-1" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           </div>
           <div className="flex items-center gap-3 pt-2">
             <button type="submit" className="btn-maroon flex items-center gap-2"><Save size={16}/> Simpan</button>
