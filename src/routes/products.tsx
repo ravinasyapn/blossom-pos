@@ -10,6 +10,7 @@ function Products() {
   const { products, categories } = useStore();
   const [editing, setEditing] = useState<Product | null>(null);
   const [open, setOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Product | null>(null);
 
   return (
     <AppShell>
@@ -29,7 +30,6 @@ function Products() {
                 <th className="text-left p-4">Produk</th>
                 <th className="text-left p-4">Kategori</th>
                 <th className="text-left p-4">Harga</th>
-                <th className="text-left p-4">Stok</th>
                 <th className="text-right p-4">Aksi</th>
               </tr>
             </thead>
@@ -47,21 +47,42 @@ function Products() {
                     </td>
                     <td className="p-3">{cat?.name ?? "-"}</td>
                     <td className="p-3 font-semibold">{formatIDR(p.price)}</td>
-                    <td className="p-3">{p.stock}</td>
                     <td className="p-3 text-right space-x-2">
                       <button onClick={() => { setEditing(p); setOpen(true); }} className="inline-flex items-center gap-1 text-maroon hover:underline"><Pencil size={14}/></button>
-                      <button onClick={() => confirm("Hapus produk ini?") && actions.deleteProduct(p.id)} className="inline-flex items-center gap-1 text-destructive hover:underline"><Trash2 size={14}/></button>
+                      <button onClick={() => setDeleteTarget(p)} className="inline-flex items-center gap-1 text-destructive hover:underline"><Trash2 size={14}/></button>
                     </td>
                   </tr>
                 );
               })}
-              {products.length === 0 && <tr><td colSpan={5} className="p-8 text-center text-maroon/60">Belum ada produk.</td></tr>}
+              {products.length === 0 && <tr><td colSpan={4} className="p-8 text-center text-maroon/60">Belum ada produk.</td></tr>}
             </tbody>
           </table>
         </div>
       </div>
 
       {open && <ProductModal initial={editing} onClose={() => setOpen(false)} />}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setDeleteTarget(null)}>
+          <div onClick={(e) => e.stopPropagation()} className="bg-card rounded-3xl p-6 w-full max-w-sm text-center">
+            <div className="mx-auto h-14 w-14 rounded-full bg-destructive/10 flex items-center justify-center mb-3">
+              <Trash2 className="text-destructive" />
+            </div>
+            <h3 className="font-display text-xl font-bold text-maroon">Hapus Produk?</h3>
+            <p className="text-sm text-maroon/70 mt-2">
+              Produk <span className="font-semibold">"{deleteTarget.name}"</span> akan dihapus secara permanen.
+            </p>
+            <div className="flex gap-2 pt-5">
+              <button onClick={() => setDeleteTarget(null)} className="btn-olive flex-1">Batal</button>
+              <button
+                onClick={() => { actions.deleteProduct(deleteTarget.id); setDeleteTarget(null); }}
+                className="flex-1 bg-destructive text-destructive-foreground rounded-full py-2.5 font-semibold"
+              >
+                Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }
