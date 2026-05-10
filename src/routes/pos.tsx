@@ -64,8 +64,8 @@ function POS() {
           </div>
 
           <div className="relative mt-4">
-            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-maroon/50" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)} className="input-pill pl-10" placeholder="Cari bunga atau wrapping..." />
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-maroon/50 pointer-events-none" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} className="input-pill !pl-12" placeholder="Cari bunga atau wrapping..." />
           </div>
 
           <div className="flex gap-2 mt-4 flex-wrap">
