@@ -140,16 +140,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Link
-            to="/login"
-            className="flex items-center gap-3 px-5 py-3 rounded-full text-maroon hover:bg-secondary text-sm font-semibold"
+          <a
+            href="/login"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-5 py-3 rounded-full text-maroon hover:bg-secondary text-sm font-semibold cursor-pointer"
           >
             <LogOut size={18} /> Keluar
-          </Link>
+          </a>
         </div>
       </aside>
 
       <main className={`flex-1 min-w-0 pt-14 transition-[margin] duration-300 ${sidebarOpen ? "lg:ml-72" : "ml-0"}`}>
+        {error && (
+          <div className="mx-4 mt-4 bg-destructive/10 text-destructive text-sm rounded-xl px-4 py-2.5 border border-destructive/30">
+            Gagal memuat data dari server: {error}
+          </div>
+        )}
         {children}
       </main>
     </div>
