@@ -74,7 +74,7 @@ function Products() {
             <div className="flex gap-2 pt-5">
               <button onClick={() => setDeleteTarget(null)} className="btn-olive flex-1">Batal</button>
               <button
-                onClick={() => { actions.deleteProduct(deleteTarget.id); setDeleteTarget(null); }}
+                onClick={async () => { try { await actions.deleteProduct(deleteTarget.id); setDeleteTarget(null); } catch (e: any) { alert(e?.message ?? "Gagal menghapus"); } }}
                 className="flex-1 bg-destructive text-destructive-foreground rounded-full py-2.5 font-semibold"
               >
                 Hapus
@@ -95,12 +95,16 @@ function ProductModal({ initial, onClose }: { initial: Product | null; onClose: 
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? categories[0]?.id ?? "");
   const [image, setImage] = useState(initial?.image ?? "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400");
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     const payload = { name, price: parseInt(price) || 0, unit, categoryId, stock: initial?.stock ?? 0, image };
-    if (initial) actions.updateProduct(initial.id, payload);
-    else actions.addProduct(payload);
-    onClose();
+    try {
+      if (initial) await actions.updateProduct(initial.id, payload);
+      else await actions.addProduct(payload);
+      onClose();
+    } catch (e: any) {
+      alert(e?.message ?? "Gagal menyimpan produk");
+    }
   }
 
   return (
