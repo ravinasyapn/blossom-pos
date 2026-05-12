@@ -173,8 +173,9 @@ function POS() {
               <span className="font-bold text-maroon">Total Tagihan</span>
               <span className="font-display font-bold text-xl text-maroon">{formatIDR(subtotal)}</span>
             </div>
-            <button disabled={!canPay} onClick={process} className="w-full py-3 rounded-full font-bold bg-pink-soft text-maroon disabled:opacity-50">
-              Proses Pembayaran
+            {payError && <p className="text-xs text-destructive">{payError}</p>}
+            <button disabled={!canPay || submitting} onClick={process} className="w-full py-3 rounded-full font-bold bg-pink-soft text-maroon disabled:opacity-50">
+              {submitting ? "Memproses..." : "Proses Pembayaran"}
             </button>
           </div>
         </aside>
