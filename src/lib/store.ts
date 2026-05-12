@@ -1,27 +1,18 @@
-// Local data store with localStorage persistence
-import { useEffect, useState, useSyncExternalStore } from "react";
+// API-backed data store with reactive state
+import { useSyncExternalStore } from "react";
+import {
+  categoriesApi,
+  productsApi,
+  transactionsApi,
+  type ApiCategory,
+  type ApiProduct,
+  type ApiTransaction,
+} from "./api";
 
-export type Category = { id: string; name: string };
-export type Product = {
-  id: string;
-  name: string;
-  price: number;
-  unit: string;
-  categoryId: string;
-  stock: number;
-  image: string;
-};
+export type Category = ApiCategory;
+export type Product = ApiProduct;
+export type Transaction = ApiTransaction;
 export type CartItem = { productId: string; qty: number };
-export type Transaction = {
-  id: string;
-  date: string;
-  customer: string;
-  method: "Tunai" | "QRIS";
-  items: { name: string; qty: number; price: number; unit: string }[];
-  subtotal: number;
-  paid: number;
-  change: number;
-};
 export type Settings = {
   shopName: string;
   address: string;
@@ -34,120 +25,124 @@ type Store = {
   products: Product[];
   transactions: Transaction[];
   settings: Settings;
+  loaded: boolean;
+  loading: boolean;
+  error: string | null;
 };
 
-const FLOWER_IMGS = [
-  "https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=400",
-  "https://images.unsplash.com/photo-1487530811176-3780de880c2d?w=400",
-  "https://images.unsplash.com/photo-1508610048659-a06b669e3321?w=400",
-  "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=400",
-  "https://images.unsplash.com/photo-1561181286-d3fee7d55364?w=400",
-  "https://images.unsplash.com/photo-1457089328389-e5d2e7da5202?w=400",
-];
-const WRAP_IMG = "https://images.unsplash.com/photo-1519378058457-4c29a0a2efac?w=400";
+const SETTINGS_KEY = "gurita-settings-v1";
 
-const DEFAULT: Store = {
-  categories: [
-    { id: "c1", name: "Bunga" },
-    { id: "c2", name: "Wrapping" },
-  ],
-  products: [
-    { id: "p1", name: "Mawar Merah", price: 15000, unit: "tangkai", categoryId: "c1", stock: 50, image: FLOWER_IMGS[0] },
-    { id: "p2", name: "Mawar Pink", price: 15000, unit: "tangkai", categoryId: "c1", stock: 40, image: FLOWER_IMGS[1] },
-    { id: "p3", name: "Aster Ungu", price: 15000, unit: "tangkai", categoryId: "c1", stock: 30, image: FLOWER_IMGS[2] },
-    { id: "p4", name: "Daisy Pink", price: 12000, unit: "tangkai", categoryId: "c1", stock: 60, image: FLOWER_IMGS[3] },
-    { id: "p5", name: "Krisan", price: 10000, unit: "tangkai", categoryId: "c1", stock: 80, image: FLOWER_IMGS[4] },
-    { id: "p6", name: "Baby Breath", price: 18000, unit: "ikat", categoryId: "c1", stock: 25, image: FLOWER_IMGS[5] },
-    { id: "p7", name: "Wrapping Kraft", price: 8000, unit: "lembar", categoryId: "c2", stock: 100, image: WRAP_IMG },
-    { id: "p8", name: "Wrapping Korean", price: 12000, unit: "lembar", categoryId: "c2", stock: 80, image: WRAP_IMG },
-  ],
-  transactions: [],
-  settings: {
-    shopName: "Gurita Bouquet",
-    address: "Jl. Bunga Mawar No. 12, Jakarta",
-    phone: "0812-3456-7890",
-    taxPercent: 0,
-  },
+const DEFAULT_SETTINGS: Settings = {
+  shopName: "Gurita Bouquet",
+  address: "Jl. Bunga Mawar No. 12, Jakarta",
+  phone: "0812-3456-7890",
+  taxPercent: 0,
 };
 
-const KEY = "gurita-store-v1";
-let store: Store = load();
-const listeners = new Set<() => void>();
-
-function load(): Store {
-  if (typeof window === "undefined") return DEFAULT;
+function loadSettings(): Settings {
+  if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return DEFAULT;
-    return { ...DEFAULT, ...JSON.parse(raw) };
-  } catch {
-    return DEFAULT;
-  }
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? { ...DEFAULT_SETTINGS, ...JSON.parse(raw) } : DEFAULT_SETTINGS;
+  } catch { return DEFAULT_SETTINGS; }
 }
-function persist() {
-  if (typeof window !== "undefined") localStorage.setItem(KEY, JSON.stringify(store));
-  listeners.forEach((l) => l());
-}
-function subscribe(cb: () => void) {
-  listeners.add(cb);
-  return () => listeners.delete(cb);
-}
+
+let store: Store = {
+  categories: [],
+  products: [],
+  transactions: [],
+  settings: loadSettings(),
+  loaded: false,
+  loading: false,
+  error: null,
+};
+
+const listeners = new Set<() => void>();
+function emit() { listeners.forEach((l) => l()); }
+function subscribe(cb: () => void) { listeners.add(cb); return () => listeners.delete(cb); }
 
 export function useStore(): Store {
-  return useSyncExternalStore(
-    subscribe,
-    () => store,
-    () => DEFAULT,
-  );
+  return useSyncExternalStore(subscribe, () => store, () => store);
 }
 
 export const actions = {
-  addCategory(name: string) {
-    store = { ...store, categories: [...store.categories, { id: crypto.randomUUID(), name }] };
-    persist();
+  async syncAll() {
+    if (store.loading) return;
+    store = { ...store, loading: true, error: null };
+    emit();
+    try {
+      const [categories, products, transactions] = await Promise.all([
+        categoriesApi.list().catch(() => store.categories),
+        productsApi.list().catch(() => store.products),
+        transactionsApi.list().catch(() => store.transactions),
+      ]);
+      store = { ...store, categories, products, transactions, loaded: true, loading: false };
+    } catch (e: any) {
+      store = { ...store, loading: false, error: e?.message ?? "Gagal memuat data" };
+    }
+    emit();
   },
-  updateCategory(id: string, name: string) {
-    store = { ...store, categories: store.categories.map((c) => (c.id === id ? { ...c, name } : c)) };
-    persist();
+
+  async addCategory(name: string) {
+    const c = await categoriesApi.create(name);
+    store = { ...store, categories: [...store.categories, c] };
+    emit();
   },
-  deleteCategory(id: string) {
+  async updateCategory(id: string, name: string) {
+    const c = await categoriesApi.update(id, name);
+    store = { ...store, categories: store.categories.map((x) => (x.id === id ? c : x)) };
+    emit();
+  },
+  async deleteCategory(id: string) {
+    await categoriesApi.remove(id);
     store = {
       ...store,
       categories: store.categories.filter((c) => c.id !== id),
       products: store.products.filter((p) => p.categoryId !== id),
     };
-    persist();
+    emit();
   },
-  addProduct(p: Omit<Product, "id">) {
-    store = { ...store, products: [...store.products, { ...p, id: crypto.randomUUID() }] };
-    persist();
+
+  async addProduct(p: Omit<Product, "id">) {
+    const np = await productsApi.create(p);
+    store = { ...store, products: [...store.products, np] };
+    emit();
   },
-  updateProduct(id: string, patch: Partial<Product>) {
-    store = { ...store, products: store.products.map((p) => (p.id === id ? { ...p, ...patch } : p)) };
-    persist();
+  async updateProduct(id: string, patch: Partial<Product>) {
+    const existing = store.products.find((x) => x.id === id);
+    const merged = { ...existing, ...patch } as Product;
+    const np = await productsApi.update(id, merged);
+    store = { ...store, products: store.products.map((x) => (x.id === id ? np : x)) };
+    emit();
   },
-  deleteProduct(id: string) {
+  async deleteProduct(id: string) {
+    await productsApi.remove(id);
     store = { ...store, products: store.products.filter((p) => p.id !== id) };
-    persist();
+    emit();
   },
-  addTransaction(t: Omit<Transaction, "id" | "date">) {
-    const tx: Transaction = { ...t, id: crypto.randomUUID(), date: new Date().toISOString() };
-    // decrement stock
+
+  async addTransaction(t: Omit<Transaction, "id" | "date">) {
+    const tx = await transactionsApi.create(t);
     const products = store.products.map((p) => {
       const item = t.items.find((i) => i.name === p.name);
       return item ? { ...p, stock: Math.max(0, p.stock - item.qty) } : p;
     });
     store = { ...store, transactions: [tx, ...store.transactions], products };
-    persist();
+    emit();
     return tx;
   },
+
   updateSettings(patch: Partial<Settings>) {
     store = { ...store, settings: { ...store.settings, ...patch } };
-    persist();
+    if (typeof window !== "undefined") {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(store.settings));
+    }
+    emit();
   },
-  reset() {
-    store = DEFAULT;
-    persist();
+  async reset() {
+    store = { ...store, categories: [], products: [], transactions: [], loaded: false };
+    emit();
+    await this.syncAll();
   },
 };
 

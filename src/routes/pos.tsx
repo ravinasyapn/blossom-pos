@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { useStore, useCart, cartActions, actions, formatIDR } from "@/lib/store";
+import { useStore, useCart, cartActions, actions, formatIDR, type Transaction } from "@/lib/store";
 import { ShoppingCart, Trash2, User, Search, Receipt } from "lucide-react";
 
 export const Route = createFileRoute("/pos")({ component: POS });
@@ -14,7 +14,9 @@ function POS() {
   const [customer, setCustomer] = useState("");
   const [method, setMethod] = useState<"Tunai" | "QRIS">("Tunai");
   const [paid, setPaid] = useState<string>("");
-  const [receipt, setReceipt] = useState<null | ReturnType<typeof actions.addTransaction>>(null);
+  const [receipt, setReceipt] = useState<Transaction | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
@@ -33,19 +35,27 @@ function POS() {
   const change = method === "Tunai" ? Math.max(0, paidNum - subtotal) : 0;
   const canPay = subtotal > 0 && (method === "QRIS" || paidNum >= subtotal);
 
-  function process() {
-    if (!canPay) return;
-    const tx = actions.addTransaction({
-      customer: customer || "Pelanggan",
-      method,
-      items: detailed.map((d) => ({ name: d.product.name, qty: d.qty, price: d.product.price, unit: d.product.unit })),
-      subtotal,
-      paid: method === "Tunai" ? paidNum : subtotal,
-      change,
-    });
-    setReceipt(tx);
-    cartActions.clear();
-    setCustomer(""); setPaid("");
+  async function process() {
+    if (!canPay || submitting) return;
+    setSubmitting(true);
+    setPayError(null);
+    try {
+      const tx = await actions.addTransaction({
+        customer: customer || "Pelanggan",
+        method,
+        items: detailed.map((d) => ({ name: d.product.name, qty: d.qty, price: d.product.price, unit: d.product.unit })),
+        subtotal,
+        paid: method === "Tunai" ? paidNum : subtotal,
+        change,
+      });
+      setReceipt(tx);
+      cartActions.clear();
+      setCustomer(""); setPaid("");
+    } catch (err: any) {
+      setPayError(err?.message ?? "Gagal memproses pembayaran.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -163,8 +173,9 @@ function POS() {
               <span className="font-bold text-maroon">Total Tagihan</span>
               <span className="font-display font-bold text-xl text-maroon">{formatIDR(subtotal)}</span>
             </div>
-            <button disabled={!canPay} onClick={process} className="w-full py-3 rounded-full font-bold bg-pink-soft text-maroon disabled:opacity-50">
-              Proses Pembayaran
+            {payError && <p className="text-xs text-destructive">{payError}</p>}
+            <button disabled={!canPay || submitting} onClick={process} className="w-full py-3 rounded-full font-bold bg-pink-soft text-maroon disabled:opacity-50">
+              {submitting ? "Memproses..." : "Proses Pembayaran"}
             </button>
           </div>
         </aside>

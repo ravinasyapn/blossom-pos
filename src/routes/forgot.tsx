@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Mail, CheckCircle2 } from "lucide-react";
+import { forgotPassword } from "@/lib/api";
 
 export const Route = createFileRoute("/forgot")({ component: Forgot });
 
@@ -9,6 +10,22 @@ function Forgot() {
   const nav = useNavigate();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      await forgotPassword(email);
+      setSent(true);
+    } catch (err: any) {
+      setError(err?.message ?? "Gagal mengirim email.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   if (sent) {
     return (
@@ -45,7 +62,8 @@ function Forgot() {
         <h2 className="font-display text-3xl text-maroon font-bold">Lupa Password?</h2>
         <p className="text-sm text-maroon/70 mt-2">Masukkan email akunmu untuk menerima tautan reset password.</p>
       </div>
-      <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); setSent(true); }}>
+      <form className="space-y-5" onSubmit={submit}>
+        {error && <div className="bg-destructive/10 text-destructive text-sm rounded-xl px-4 py-2.5 border border-destructive/30">{error}</div>}
         <div>
           <label className="block text-sm font-semibold text-maroon mb-2">Email</label>
           <input
@@ -57,7 +75,7 @@ function Forgot() {
             required
           />
         </div>
-        <button type="submit" className="btn-olive w-full">Kirim Tautan</button>
+        <button type="submit" disabled={loading} className="btn-olive w-full disabled:opacity-60">{loading ? "Mengirim..." : "Kirim Tautan"}</button>
         <p className="text-center text-sm">
           <Link to="/login" className="text-maroon font-semibold hover:underline">Kembali ke Masuk</Link>
         </p>

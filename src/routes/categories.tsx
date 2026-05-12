@@ -43,7 +43,7 @@ function Categories() {
                 <div className="flex gap-2">
                   {editing ? (
                     <>
-                      <button onClick={() => { actions.updateCategory(c.id, editName); setEditId(null); }} className="btn-maroon py-1.5 px-4 text-xs">Simpan</button>
+                      <button onClick={async () => { try { await actions.updateCategory(c.id, editName); setEditId(null); } catch (e: any) { alert(e?.message ?? "Gagal menyimpan"); } }} className="btn-maroon py-1.5 px-4 text-xs">Simpan</button>
                       <button onClick={() => setEditId(null)} className="btn-olive py-1.5 px-4 text-xs">Batal</button>
                     </>
                   ) : (
@@ -75,7 +75,7 @@ function Categories() {
             <div className="flex gap-2 pt-5">
               <button onClick={() => setDeleteTarget(null)} className="btn-olive flex-1">Batal</button>
               <button
-                onClick={() => { actions.deleteCategory(deleteTarget.id); setDeleteTarget(null); }}
+                onClick={async () => { try { await actions.deleteCategory(deleteTarget.id); setDeleteTarget(null); } catch (e: any) { alert(e?.message ?? "Gagal menghapus"); } }}
                 className="flex-1 bg-destructive text-destructive-foreground rounded-full py-2.5 font-semibold"
               >
                 Hapus
@@ -91,11 +91,11 @@ function Categories() {
 function AddCategoryModal({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState("");
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    actions.addCategory(name.trim());
-    onClose();
+    try { await actions.addCategory(name.trim()); onClose(); }
+    catch (e: any) { alert(e?.message ?? "Gagal menambah kategori"); }
   }
 
   return (

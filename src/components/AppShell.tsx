@@ -1,7 +1,9 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { Home, Package, History, Settings as SettingsIcon, ChevronDown, LogOut, Menu, X } from "lucide-react";
 import { useState, useEffect, type ReactNode } from "react";
 import logo from "@/assets/logo.jpeg";
+import { actions, useStore } from "@/lib/store";
+import { auth, logout } from "@/lib/api";
 
 const navMain = [
   { to: "/pos", label: "Beranda", icon: Home },
@@ -19,14 +21,29 @@ const navTail = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
+  const nav = useNavigate();
+  const { loaded, loading, error } = useStore();
   const isProductSection = productSub.some((s) => pathname.startsWith(s.to));
   const [openSub, setOpenSub] = useState(isProductSection);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
-    // auto-close on mobile after navigation
+    if (typeof window !== "undefined" && !auth.isAuthed()) {
+      nav({ to: "/login" });
+      return;
+    }
+    if (!loaded && !loading) actions.syncAll();
+  }, [loaded, loading, nav]);
+
+  useEffect(() => {
     if (window.innerWidth < 1024) setSidebarOpen(false);
   }, [pathname]);
+
+  async function handleLogout(e: React.MouseEvent) {
+    e.preventDefault();
+    await logout();
+    nav({ to: "/login" });
+  }
 
   return (
     <div className="flex min-h-screen bg-pink-soft">
@@ -123,16 +140,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <Link
-            to="/login"
-            className="flex items-center gap-3 px-5 py-3 rounded-full text-maroon hover:bg-secondary text-sm font-semibold"
+          <a
+            href="/login"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-5 py-3 rounded-full text-maroon hover:bg-secondary text-sm font-semibold cursor-pointer"
           >
             <LogOut size={18} /> Keluar
-          </Link>
+          </a>
         </div>
       </aside>
 
       <main className={`flex-1 min-w-0 pt-14 transition-[margin] duration-300 ${sidebarOpen ? "lg:ml-72" : "ml-0"}`}>
+        {error && (
+          <div className="mx-4 mt-4 bg-destructive/10 text-destructive text-sm rounded-xl px-4 py-2.5 border border-destructive/30">
+            Gagal memuat data dari server: {error}
+          </div>
+        )}
         {children}
       </main>
     </div>
