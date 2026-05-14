@@ -15,7 +15,7 @@ function Categories() {
 
   return (
     <AppShell>
-      <div className="p-8 space-y-6 max-w-3xl">
+      <div className="p-8 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-3xl font-bold text-maroon flex items-center gap-2"><Boxes /> Daftar Kategori</h1>
