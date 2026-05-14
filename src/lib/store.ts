@@ -33,9 +33,9 @@ type Store = {
 const SETTINGS_KEY = "gurita-settings-v1";
 
 const DEFAULT_SETTINGS: Settings = {
-  shopName: "Gurita Bouquet",
-  address: "Jl. Bunga Mawar No. 12, Jakarta",
-  phone: "0812-3456-7890",
+  shopName: "",
+  address: "",
+  phone: "",
   taxPercent: 0,
 };
 
